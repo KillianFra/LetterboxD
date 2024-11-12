@@ -1,5 +1,7 @@
 import express from 'express';
 
+//routers
+import movieRouter from './server/controllers/movieController';
 
 
 const app = express();
