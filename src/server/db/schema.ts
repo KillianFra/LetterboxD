@@ -2,7 +2,7 @@ import { pgTable, serial, integer, varchar, text, boolean, timestamp, numeric } 
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  username: varchar('username', { length: 255 }),
+  username: varchar('username', { length: 255 }).unique(),
   role: varchar('role', { length: 50 }),
   password: varchar('password', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow(),
