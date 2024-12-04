@@ -1,14 +1,12 @@
 import {
   movies,
-  productionCompanies,
-  productionCountries,
   movieGenres,
   genres,
+  users,
 } from "../src/server/db/schema.ts";
 
+type user = typeof users.$inferInsert;
 type movie = typeof movies.$inferInsert;
-type productionCompany = typeof productionCompanies.$inferInsert;
-type productionCountry = typeof productionCountries.$inferInsert;
 type movieGenre = typeof movieGenres.$inferInsert;
 type genre = typeof genres.$inferInsert;
 type movieIMDB = {
@@ -30,4 +28,4 @@ type movieIMDB = {
 
 }
 
-export type { movie, productionCompany, productionCountry, movieGenre, genre, movieIMDB };
+export type {user, movie, movieGenre, genre, movieIMDB };

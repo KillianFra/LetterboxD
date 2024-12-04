@@ -1,7 +1,7 @@
 import { movies } from "../db/schema";
 import { db } from "../db/index.ts";
 import { movie, movieIMDB } from "../../../types/movies.ts";
-import { eq, ilike, like } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 
 const insertMovie = async (movie: movie) => {
   await db

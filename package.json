@@ -11,6 +11,9 @@
     "pull": "npx drizzle-kit pull"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/jsonwebtoken": "^9.0.7",
     "drizzle-kit": "^0.26.2",
     "express": "^4.21.1",
     "nodemon": "^3.1.7",
@@ -23,8 +26,12 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.8.1",
     "@vercel/postgres": "^0.10.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.35.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
     "vite-plugin-vercel": "^9.0.3"
   }
 }
