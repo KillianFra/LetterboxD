@@ -12,7 +12,6 @@ router.get('/', async (req, res) => {
 router.get('/search', async (req: any, res: any) => {
     const query = req.query.q
     const page = req.query.page ? req.query.page : 0
-    console.log(query, page);
      
     if (!query) {
         res.status(400).send('No query found')

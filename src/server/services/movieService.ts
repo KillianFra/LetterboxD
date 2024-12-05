@@ -37,8 +37,6 @@ export async function retrieveMoviesBySearch(query: string, page: number) {
   .limit(50)
   .offset(offset * 50)
   .execute()
-  
-  console.log(moviesList);
   return moviesList
 }
 

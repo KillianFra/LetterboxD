@@ -1,9 +1,9 @@
 import { db } from "../db";
-import { users } from "../db/schema";
+import { rolesEnum, users } from "../db/schema";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { eq } from "drizzle-orm";
-import { user } from "../../../types/movies";
+import { user, userToken } from "../../../types/movies";
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 const SALT_ROUNDS = 10;
@@ -12,7 +12,6 @@ const SALT_ROUNDS = 10;
 export const registerUser = async (
   username: string,
   password: string,
-  role: string
 ) => {
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
@@ -20,9 +19,8 @@ export const registerUser = async (
     const user = await db.insert(users).values({
       username,
       password: hashedPassword,
-      role,
     }).returning({ id: users.id, username: users.username, role: users.role })
-      return user
+    return user
   } catch (error) {
     throw new Error("Error registering user");
   }
@@ -49,11 +47,17 @@ export const authenticateUser = async (
     return null; // Invalid password
   }
 
-  return user[0];
+  const userToken: userToken = {
+    id: user[0].id,
+    username: user[0].username,
+    role: user[0].role,
+  };
+
+  return userToken;
 };
 
 // Generate JWT token for authenticated user
-export const generateToken = (user: user): string | null => {
+export const generateToken = (user: userToken): string | null => {
   if (!user) return null;
   return jwt.sign(
     { id: user.id, username: user.username, role: user.role },

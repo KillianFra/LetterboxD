@@ -6,6 +6,8 @@ import {
 } from "../src/server/db/schema.ts";
 
 type user = typeof users.$inferInsert;
+type userToken = Omit<user, "password">;
+type roles = typeof users.$inferInsert.role;
 type movie = typeof movies.$inferInsert;
 type movieGenre = typeof movieGenres.$inferInsert;
 type genre = typeof genres.$inferInsert;
@@ -28,4 +30,4 @@ type movieIMDB = {
 
 }
 
-export type {user, movie, movieGenre, genre, movieIMDB };
+export type {user,userToken, roles, movie, movieGenre, genre, movieIMDB };
