@@ -8,25 +8,25 @@ const router = express.Router();
 
 router.use(cookieParser());
 
-router.post("/register", async (req, res) => {
+router.post("/register", async (req: any, res: any) => {
   const { username, password } = req.body;
-
+  let newUser;
   if (!username || !password) {
     return res.status(400).send("Username, password, and role are required");
   }
   try {
-    const newUser = await userService.registerUser(username, password);
-    if (!newUser) {
-      return res.status(400).send("User already exists");
-    }
-    res.status(201).json({ user: newUser });
+    newUser = await userService.registerUser(username, password);
+    res.status(201).json({status: true, user: newUser });
   } catch (error) {
-    res.status(500).send("Error registering user");
+    if (!newUser) {
+      return res.json({status: false, message: "User Already Exist"}).status(400);
+    }
+    res.json({status: false, message: "Error registering User"}).status(500);
   }
 });
 
 // Login user and return JWT token as a cookie
-router.post("/login", async (req, res) => {
+router.post("/login", async (req: any, res: any) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).send("Username and password are required");
@@ -48,7 +48,7 @@ router.post("/login", async (req, res) => {
 });
 
 // Get current user (requires JWT token in cookies)
-router.get("/me", async (req, res) => {
+router.get("/me", async (req: any, res: any) => {
   // Try to get the token from cookies
   const token = req.headers?.authorization;
 
@@ -72,10 +72,6 @@ router.get("/me", async (req, res) => {
   } catch (error) {
     res.status(401).send("Invalid or expired token");
   }
-});
-
-router.get("/logout", (req, res) => {
-  res.clearCookie("token").send("Logged out successfully");
 });
 
 export default router;
