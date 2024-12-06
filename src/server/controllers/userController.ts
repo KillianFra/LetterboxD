@@ -4,9 +4,34 @@ import { db } from "../db";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import cookieParser from "cookie-parser";
+import { authMiddleware } from "../middleware/authMiddleware";
+
 const router = express.Router();
 
 router.use(cookieParser());
+
+router.get("/", async (req: any, res: any) => {
+  try {
+    const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+    const users = await userService.getUsers(offset);
+    res.status(200).send({ status: true, users });
+  } catch (error) {
+    throw new Error("Invalid page number");
+  }
+});
+
+router.put("/", authMiddleware, async (req: any, res: any) => {
+  if (!req.body.username || !req.body.password) {
+    return res.status(400).json({ status: false, message: "Username and password are required" });
+  }
+  try {
+    const updatedUser = await userService.updateUser(req.body.username, req.body.password, req.user);
+    const token = userService.generateToken(updatedUser);
+    res.status(200).json({ status: true, user: updatedUser, token: token });
+  } catch (error) {
+    res.status(400).json({ status: false, message: "Error updating user" });
+  }
+});
 
 router.post("/register", async (req: any, res: any) => {
   const { username, password } = req.body;
@@ -51,7 +76,6 @@ router.post("/login", async (req: any, res: any) => {
 router.get("/me", async (req: any, res: any) => {
   // Try to get the token from cookies
   const token = req.headers?.authorization;
-
   if (!token) {
     return res.status(401).send("Not Authenticated");
   }
@@ -59,18 +83,21 @@ router.get("/me", async (req: any, res: any) => {
   try {
     const decoded = userService.verifyToken(token);
     const user = await db
-      .select()
+      .select({
+        id: users.id,
+        username: users.username,
+        role: users.role,
+      })
       .from(users)
       .where(eq(users.id, decoded.id))
       .limit(1);
-
     if (user.length === 0) {
       return res.status(404).send("User not found");
     }
 
-    res.json(user[0]); // Return the authenticated user details
+    res.json({status: true, user: user[0]});
   } catch (error) {
-    res.status(401).send("Invalid or expired token");
+    res.status(401).send({ status: false, message: error.message });
   }
 });
 
