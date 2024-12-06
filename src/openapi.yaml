@@ -204,20 +204,65 @@ paths:
         '500':
           description: Error retrieving movies
    
+
+  /movies/reviews:
+    get:
+      tags:
+        - movie
+      parameters:
+        - name: movieId
+          in: query
+          required: false
+          schema:
+            type: string
+            example: 1
+      summary: Retrieves a list of reviews for a specific movie
+      responses:
+        '200':
+          description: A list of reviews
+        '404':
+          description: Movie not found
+        '500':
+          description: Error retrieving reviews 
   /movies/review:
+    put:
+      tags:
+        - movie
+      security:
+        - bearerAuth: []
+      summary: Updates a review for a movie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movieId:
+                  type: string
+                rating:
+                  type: integer
+                review:
+                  type: string
+              required:
+                - movieId
+                - rating
+                - review
+      responses:
+        '200':
+          description: Review successfully updated
+        '400':
+          description: Missing required fields
+        '404':
+          description: Review not found
+        '500':
+          description: Error updating review
     post:
       tags:
         - movie
       security:
         - bearerAuth: []
       summary: Add a review to a movie
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
-            example: Bearer <token>
       requestBody:
         required: true
         content:
@@ -250,13 +295,6 @@ paths:
       security:
         - bearerAuth: []
       summary: Remove a review from a movie
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
-            example: Bearer <token>
       requestBody:
         required: true
         content:

@@ -1,7 +1,7 @@
-import { movies } from "../db/schema";
+import { movies, reviews, users } from "../db/schema";
 import { db } from "../db/index.ts";
-import { movie, movieIMDB } from "../../../types/movies.ts";
-import { eq, ilike } from "drizzle-orm";
+import { movie, movieIMDB, userToken } from "../../../types/movies.ts";
+import { and, eq, ilike } from "drizzle-orm";
 
 const insertMovie = async (movie: movie) => {
   await db
@@ -11,6 +11,60 @@ const insertMovie = async (movie: movie) => {
       throw new Error(e);
     });
 };
+
+export async function addReview(movieId: number, review: string, rating: number, user: userToken) {
+  const reviewResponse = await db
+    .insert(reviews)
+    .values({
+      movieId,
+      body: review,
+      rating: rating,
+      userId: user.id!,
+      createdAt: new Date(),
+    })
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return reviewResponse;
+}
+
+
+export async function updateReview(movieId: number, review: string, rating: number, user: userToken) {
+  const reviewResponse = await db
+    .update(reviews)
+    .set({
+      body: review,
+      rating: rating,
+    })
+    .where(and(eq(reviews.movieId, movieId), eq(reviews.userId, user.id!)))
+    .returning()
+    .catch((e) => {
+      console.log(e);
+      throw new Error(e);
+    });
+  return reviewResponse;
+}
+
+
+export async function retrieveReviews(movieId: number, offset: number) {
+  const reviewsList = await db
+    .select({
+      review: reviews.body,
+      rating: reviews.rating,
+      createdAt: reviews.createdAt,
+      name: users.username,
+      role: users.role,
+    })
+    .from(reviews)
+    .leftJoin(users, eq(reviews.userId, users.id))
+    .where(eq(reviews.movieId, movieId))
+    .limit(50)
+    .offset(offset * 50)
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return reviewsList;
+}
 
 export async function retrieveAllMovies(page: number) {
     if (page < 1) {
