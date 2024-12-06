@@ -1,34 +1,51 @@
-import express from "express";
-import * as movieService from "../services/movieService";
+import express, { NextFunction } from "express";
 import * as friendService from "../services/friendService";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  const user = req.user; //need to work on this
-  if (!user) {
-    res.status(401).send("Unauthorized");
-    return;
-  }
-  const friends = await friendService.retrieveFriendsByUserId(user.id);
-  res.send(friends);
+router.get("/following", async (req: any, res: any) => {
+    console.log(req.user);
+    const following = await friendService.getFollowing(req.user.id);
+    res.status(200).json({ status: true, following });
+})
+
+router.get("/followers", async (req: any, res: any) => {
+    let offset = 0
+    try {
+        offset = req.query.page ? parseInt(req.query.page as string) : 0;
+    } catch (error) {
+        res.status(400).json({ status: false, message: "Invalid page number" });
+    }
+    const followers = await friendService.getFollowers(offset, req.user.id);
+    res.status(200).json({ status: true, followers });
+})
+
+
+router.post("/follow", async (req: any, res: any, next: NextFunction) => {
+    try {
+      const friendId = req.body.friendId;
+      if (!friendId) {
+        return res.status(400).json({ status: false, message: "Friend id is required" });
+      }
+      const follow = await friendService.follow(req.user.id, friendId);
+      res.status(200).json({ status: true, message: "Followed successfully", follow });
+    } catch (error) {
+      next(error); // Pass error to middleware
+    }
 });
 
-router.get("/populate", async (_, res) => {
-  await movieService.populateMovies();
-  res.send("Populating movies");
+router.post("/unfollow", async (req: any, res: any, next: NextFunction) => {
+    try {
+        const friendId = req.body.friendId;
+        if (!friendId) {
+            return res.status(400).json({ status: false, message: "Friend id is required" });
+        }
+        const unfollow = await friendService.unfollow(req.user.id, friendId);
+        res.status(200).json({ status: true, unfollow });
+    } catch (error) {
+        next(error); // Forward error to middleware
+    }
 });
 
-router.get("/:id", async (req, res) => {
-  let movieId: number;
-  let movie;
-  try {
-    movieId = parseInt(req.params.id);
-    movie = await movieService.retrieveMovieById(movieId);
-  } catch (e) {
-    res.status(400).send("Invalid id parameter");
-  }
-  res.send(movie);
-});
 
 export default router;
