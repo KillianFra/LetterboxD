@@ -8,7 +8,7 @@ const insertMovie = async (movie: movie) => {
     .insert(movies)
     .values(movie)
     .catch((e) => {
-      console.error(e);
+      throw new Error(e);
     });
 };
 
@@ -21,7 +21,10 @@ export async function retrieveAllMovies(page: number) {
     .select()
     .from(movies)
     .limit(50)
-    .offset(page * 50);
+    .offset(page * 50)
+    .catch((e) => {
+      throw new Error(e);
+    });
   return allMovies;
 }
 
@@ -41,8 +44,8 @@ export async function retrieveMoviesBySearch(query: string, page: number) {
 }
 
 export async function retrieveMovieById(id: number) {
-  const movie = await db.select().from(movies).where(eq(movies.id, id));
-  return movie;
+  const movie = await db.select().from(movies).where(eq(movies.id, id)).limit(1);
+  return movie[0];
 }
 
 //FOR DEVELOPMENT PURPOSES ONLY
