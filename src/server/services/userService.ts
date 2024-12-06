@@ -20,7 +20,7 @@ export const registerUser = async (
       username,
       password: hashedPassword,
     }).returning({ id: users.id, username: users.username, role: users.role })
-    return user
+    return user[0]
   } catch (error) {
     throw new Error("Error registering user");
   }
