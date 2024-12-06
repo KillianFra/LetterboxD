@@ -41,13 +41,14 @@ export const movies = pgTable('movies', {
 });
 
 export const reviews = pgTable('reviews', {
-  id: serial('id').primaryKey(),
   rating: integer('rating').notNull(),
   body: text('body').notNull(),
   userId: integer('user_id').references(() => users.id).notNull(),
   movieId: integer('movie_id').references(() => movies.id).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
-});
+}, (table) => ({
+  pk: primaryKey({ columns: [table.userId, table.movieId] })
+}));
 
 export const genres = pgTable('genres', {
   id: serial('id').primaryKey(),
@@ -73,7 +74,7 @@ export const friends = pgTable('friends', {
   friendId: integer('friend_id').references(() => users.id).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 }, (table) => ({
-  pk: primaryKey({ columns: [table.userId, table.friendId] }), // Composite primary key
+  pk: primaryKey({ columns: [table.userId, table.friendId] }),
 }));
 
 

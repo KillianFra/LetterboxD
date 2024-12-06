@@ -5,6 +5,7 @@ import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import cookieParser from "cookie-parser";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { AuthenticatedRequest } from "../../../types/movies";
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get("/", async (req: any, res: any) => {
   }
 });
 
-router.put("/", authMiddleware, async (req: any, res: any) => {
+router.put("/", authMiddleware, async (req: AuthenticatedRequest, res: any) => {
   if (!req.body.username || !req.body.password) {
     return res.status(400).json({ status: false, message: "Username and password are required" });
   }

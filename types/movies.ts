@@ -1,3 +1,4 @@
+import { Request } from "express";
 import {
   movies,
   movieGenres,
@@ -30,4 +31,8 @@ type movieIMDB = {
 
 }
 
-export type {user,userToken, roles, movie, movieGenre, genre, movieIMDB };
+type AuthenticatedRequest = Request & {
+  user: userToken;
+};
+
+export type {AuthenticatedRequest, user, userToken, roles, movie, movieGenre, genre, movieIMDB };
