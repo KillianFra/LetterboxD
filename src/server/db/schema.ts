@@ -7,7 +7,8 @@ import {
   boolean, 
   timestamp, 
   numeric, 
-  pgEnum 
+  pgEnum,
+  primaryKey, 
 } from 'drizzle-orm/pg-core';
 
 // Existing Enum and Tables
@@ -66,17 +67,15 @@ export const notes = pgTable('notes', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+
 export const friends = pgTable('friends', {
   userId: integer('user_id').references(() => users.id).notNull(),
   friendId: integer('friend_id').references(() => users.id).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
-});
+}, (table) => ({
+  pk: primaryKey({ columns: [table.userId, table.friendId] }), // Composite primary key
+}));
 
-export const favorites = pgTable('favorites', {
-  userId: integer('user_id').references(() => users.id).notNull(),
-  movieId: integer('movie_id').references(() => movies.id).notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-});
 
 export const movieLists = pgTable('movie_lists', {
   id: serial('id').primaryKey(),
