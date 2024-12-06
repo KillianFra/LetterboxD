@@ -2,17 +2,74 @@ openapi: 3.0.0
 info:
   title: Letterboxd API
   version: 1.0.0
-  description: API documentation for the Letterboxd project
+  description: Welcome to the non-official Letterboxd API documentation. This API allows you to register, login, and interact with your friends and movies.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
 paths:
   /:
     get:
-      summary: Returns a welcome message
+      summary: Swagger
       responses:
         '200':
-          description: Welcome message
+          description: Swagger
+
+  /u/:
+    get:
+      parameters:
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 0
+      tags:
+        - user
+      summary: Retrieves a list of users
+      responses:
+        '200':
+          description: A list of users
+        '500':
+          description: Error retrieving users
+    put:
+      tags:
+        - user
+      summary: Updates the current authenticated user's details
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: User successfully updated
+        '400':
+          description: Missing required fields
+        '401':
+          description: Invalid credentials
+        '500':
+          description: Error updating user
+
   /u/register:
     post:
+      tags:
+        - user
       summary: Registers a new user
       requestBody:
         required: true
@@ -69,10 +126,8 @@ paths:
                     type: string
                     example: "Username or password missing, or user already exists"
           description: Username or password missing, or user already exists
-
         '405':
           description: Method Not Allowed
-          
         '500':
           content:
             application/json:
@@ -89,6 +144,8 @@ paths:
 
   /u/login:
     post:
+      tags:
+        - user
       summary: Authenticates a user and returns a JWT token
       requestBody:
         required: true
@@ -116,14 +173,11 @@ paths:
 
   /u/me:
     get:
+      tags:
+        - user
       summary: Retrieves the current authenticated user's details
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
-            example: Bearer <token>
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Returns the authenticated user's details
@@ -134,15 +188,36 @@ paths:
 
   /movies:
     get:
+      tags:
+        - movie
+      parameters:
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 0
       summary: Retrieves a list of movies
       responses:
         '200':
           description: A list of movies
         '500':
           description: Error retrieving movies
-
+   
+  /movies/review:
     post:
-      summary: Adds a new movie
+      tags:
+        - movie
+      security:
+        - bearerAuth: []
+      summary: Add a review to a movie
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            example: Bearer <token>
       requestBody:
         required: true
         content:
@@ -150,26 +225,61 @@ paths:
             schema:
               type: object
               properties:
-                title:
+                movieId:
                   type: string
-                director:
-                  type: string
-                releaseYear:
+                rating:
                   type: integer
+                review:
+                  type: string
               required:
-                - title
-                - director
-                - releaseYear
+                - movieId
+                - rating
+                - review
       responses:
         '201':
-          description: Movie successfully added
+          description: Review successfully added
         '400':
           description: Missing required fields
         '500':
-          description: Error adding movie
+          description: Error adding review
+  
+  /movies/unreview:
+    post:
+      tags:
+        - movie
+      security:
+        - bearerAuth: []
+      summary: Remove a review from a movie
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            example: Bearer <token>
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movieId:
+                  type: string
+              required:
+                - movieId
+      responses:
+        '200':
+          description: Review successfully removed
+        '404':
+          description: Review not found
+        '500':
+          description: Error removing review        
 
   /movies/{movieId}:
     get:
+      tags:
+        - movie
       summary: Retrieves details of a specific movie
       parameters:
         - name: movieId
@@ -185,16 +295,110 @@ paths:
         '500':
           description: Error retrieving movie details
 
-  /friends:
+  /friends/following:
     get:
-      summary: Retrieves a list of friends
+      tags:
+        - friend
+      security:
+        - bearerAuth: []
+      summary: Retrieves a list of your following users
       responses:
         '200':
-          description: A list of friends
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  following:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        userId:
+                          type: integer
+                          description: User ID of the friend
+                        friendId:
+                          type: integer
+                          description: Friend ID of the friend
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the friendship was created
+          description: Retrieves a list of who you follows
         '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Error retrieving friends"
           description: Error retrieving friends
 
+  /friends/followers:
+    get:
+      tags:
+        - friend
+      security:
+        - bearerAuth: []
+      summary: Retrieves a list of your followers
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  followers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        userId:
+                          type: integer
+                          description: User ID of the friend
+                        friendId:
+                          type: integer
+                          description: Friend ID of the friend
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the friendship was created
+          description: Retrieves a list of your followers
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Error retrieving friends"
+          description: Error retrieving friends
+
+  /friends/follow:
     post:
+      tags:
+        - friend
+      security:
+        - bearerAuth: []
       summary: Adds a new friend
       requestBody:
         required: true
@@ -203,31 +407,108 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                friendId:
                   type: string
               required:
-                - username
+                - friendId
       responses:
         '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Friend successfully added"
           description: Friend successfully added
         '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Missing required fields"
           description: Missing required fields
+        '409':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Already following the user"
+          description: Already following the user
         '500':
           description: Error adding friend
 
-  /friends/{friendId}:
-    delete:
+  /friends/unfollow:
+    post:
+      tags:
+        - friend
+      security:
+        - bearerAuth: []
       summary: Removes a friend
-      parameters:
-        - name: friendId
-          in: path
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                friendId:
+                  type: string
+              required:
+                - friendId
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "successfully unfollowed Friend"
           description: Friend successfully removed
         '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "You are not friend with this user"
           description: Friend not found
         '500':
-          description: Error removing friend
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Error removing friend"
+          description: Error removing friend  
