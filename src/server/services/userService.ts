@@ -1,9 +1,9 @@
 import { db } from "../db";
-import { users } from "../db/schema";
+import { users, reviews, friends } from "../db/schema";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { eq } from "drizzle-orm";
-import { user, userToken } from "../../../types/movies";
+import { eq, or } from "drizzle-orm";
+import { user, userToken } from "../../../types/types";
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 const SALT_ROUNDS = 10;
@@ -57,6 +57,35 @@ export const registerUser = async (
   }
 };
 
+export const deleteUser = async (userId: number) => {
+  try {
+    // Start a transaction to ensure all related data is deleted
+    const deletedUser = await db.transaction(async (trx) => {
+      // Delete related reviews
+      await trx
+        .delete(reviews)
+        .where(eq(reviews.userId, userId));
+      
+      // delete related friends
+      await trx
+        .delete(friends)
+        .where(or(eq(friends.userId, userId), (eq(friends.friendId, userId))));
+      
+      // Delete the user
+      const user = await trx
+        .delete(users)
+        .where(eq(users.id, userId))
+        .returning({ id: users.id, username: users.username, role: users.role });
+
+      return user[0];
+    });
+
+    return deletedUser;
+  } catch (error) {
+    throw new Error("Error deleting user and related data");
+  }
+}
+
 // Authenticate user by verifying password and generating JWT token
 export const authenticateUser = async (
   username: string,
@@ -98,10 +127,10 @@ export const generateToken = (user: userToken): string | null => {
 };
 
 // Verify JWT token
-export const verifyToken = (token: string): any => {
+export const verifyToken = (token: string): userToken => {
   try {
     const jwtToken = token.replace("Bearer ", "");
-    return jwt.verify(jwtToken, SECRET_KEY!);
+    return jwt.verify(jwtToken, SECRET_KEY!) as userToken;
   } catch (error) {
     throw new Error("Invalid or expired token");
   }

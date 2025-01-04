@@ -36,7 +36,9 @@ app.use(
 app.use('/u', userRouter)
 app.use('/movies', movieRouter)
 app.use('/friends', authMiddleware, friendRouter)
-
+app.use('/', (req, res) => {
+  res.redirect('/api-docs')
+})
 
 // Protected routes
 

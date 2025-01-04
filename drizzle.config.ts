@@ -6,6 +6,6 @@ export default defineConfig({
   schema: './src/server/db/schema.ts',
   dialect: 'postgresql',
   dbCredentials: {
-    url: "postgres://default:HKrdnX1fLUZ5@ep-raspy-tree-a4dyv7cu-pooler.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require",
+    url: "postgresql://postgres.dmgyvngrstdlxqigyfgs:ynovtest2024@aws-0-us-east-1.pooler.supabase.com:6543/postgres",
   },
 });

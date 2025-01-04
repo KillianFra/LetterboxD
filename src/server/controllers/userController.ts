@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction } from "express";
 import * as userService from "../services/userService";
 import { db } from "../db";
 import { users } from "../db/schema";
@@ -90,7 +90,7 @@ router.get("/me", async (req: any, res: any) => {
         role: users.role,
       })
       .from(users)
-      .where(eq(users.id, decoded.id))
+      .where(eq(users.id, decoded.id as number))
       .limit(1);
     if (user.length === 0) {
       return res.status(404).send("User not found");
@@ -99,6 +99,25 @@ router.get("/me", async (req: any, res: any) => {
     res.json({status: true, user: user[0]});
   } catch (error) {
     res.status(401).send({ status: false, message: error.message });
+  }
+});
+
+router.post("/delete", authMiddleware, async (req: AuthenticatedRequest, res: any, next: NextFunction) => {
+  const userId = req.body.userId;
+  if (userId === undefined || userId === null) {
+    return res.status(400).json({ status: false, message: "User id is required" });
+  }
+  if (req.user.role !== "admin" && req.user.id !== userId) {
+    return res.status(403).json({ status: false, message: "Unauthorized" });
+  }
+  try {
+    const deletedUser = await userService.deleteUser(userId ? userId : req.user.id);
+    if (!deletedUser) {
+      return next(new Error("User not found"));
+    }
+    res.status(200).json({ status: true, user: deletedUser });
+  } catch (error) {
+    res.status(400).json({ status: false, message: "Error deleting user" });
   }
 });
 

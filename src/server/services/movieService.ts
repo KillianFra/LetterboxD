@@ -1,6 +1,6 @@
 import { movies, reviews, users } from "../db/schema";
 import { db } from "../db/index.ts";
-import { movie, movieIMDB, userToken } from "../../../types/movies.ts";
+import { movie, movieIMDB, userToken } from "../../../types/types.ts";
 import { and, eq, ilike } from "drizzle-orm";
 
 const insertMovie = async (movie: movie) => {
@@ -21,7 +21,7 @@ export async function addReview(movieId: number, review: string, rating: number,
       rating: rating,
       userId: user.id!,
       createdAt: new Date(),
-    })
+    }).returning()
     .catch((e) => {
       throw new Error(e);
     });
@@ -39,25 +39,23 @@ export async function updateReview(movieId: number, review: string, rating: numb
     .where(and(eq(reviews.movieId, movieId), eq(reviews.userId, user.id!)))
     .returning()
     .catch((e) => {
-      console.log(e);
       throw new Error(e);
     });
   return reviewResponse;
 }
 
 
-export async function retrieveReviews(movieId: number, offset: number) {
+export async function retrieveVerifiedReviews(movieId: number, offset: number) {
   const reviewsList = await db
     .select({
       review: reviews.body,
       rating: reviews.rating,
       createdAt: reviews.createdAt,
       name: users.username,
-      role: users.role,
     })
     .from(reviews)
     .leftJoin(users, eq(reviews.userId, users.id))
-    .where(eq(reviews.movieId, movieId))
+    .where(and(eq(reviews.movieId, movieId), eq(reviews.verified, true)))
     .limit(50)
     .offset(offset * 50)
     .catch((e) => {
@@ -66,11 +64,69 @@ export async function retrieveReviews(movieId: number, offset: number) {
   return reviewsList;
 }
 
+// get all the unverified reviews for the admin to verify
+export async function retrieveUnverifiedReviews(offset: number) {
+  const reviewsList = await db
+      .select({
+          review: reviews.body,
+          rating: reviews.rating,
+          createdAt: reviews.createdAt,
+          name: users.username,
+          verified: reviews.verified,
+          userId: users.id,
+          movieId: reviews.movieId
+      })
+      .from(reviews)
+      .leftJoin(users, eq(reviews.userId, users.id)) // Join with users table
+      .where(eq(reviews.verified, false))
+      .limit(50)
+      .offset(offset * 50)
+      .catch((e) => {
+          throw new Error(e);
+      });
+  return reviewsList;
+}
+
+export async function verifyReview(movieId: number, userId: number) {
+  const reviewResponse = await db
+    .update(reviews)
+    .set({
+      verified: true,
+    })
+    .where(and(eq(reviews.movieId, movieId), eq(reviews.userId, userId)))
+    .returning()
+    .catch((e) => {
+      throw new Error(e);
+    })
+  return reviewResponse;
+}
+
+export async function deleteUserReview(movieId: number, userId: number) {
+  const reviewResponse = await db
+    .delete(reviews)
+    .where(and(eq(reviews.movieId, movieId), eq(reviews.userId, userId)))
+    .returning()
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return reviewResponse;
+}
+
+export async function deleteMovieReviews(movieId: number) {
+  const reviewResponse = await db
+    .delete(reviews)
+    .where(eq(reviews.movieId, movieId))
+    .returning()
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return reviewResponse;
+}
+
 export async function retrieveAllMovies(page: number) {
     if (page < 1) {
       page = 1;
     }
-
     const allMovies = await db
     .select()
     .from(movies)
@@ -114,12 +170,11 @@ export async function populateMovies() {
         },
       }
     );
-
+    
     if (response.status !== 200) {
       movie_id++;
       continue;
     }
-
     const movies = (await response.json()) as movieIMDB;
 
     const insertedMovie: movieIMDB = {

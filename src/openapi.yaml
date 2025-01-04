@@ -185,13 +185,39 @@ paths:
           description: Not authenticated or invalid/expired token
         '404':
           description: User not found
-
+  /u/delete:
+    post:
+        tags:
+          - user
+        summary: Delete an user (self, anyone if admin)
+        security:
+          - bearerAuth: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: integer
+                required:
+                  - userId
+        responses:
+          '200':
+            description: User successfully deleted
+          '400':
+            description: Missing required fields
+          '404':
+            description: User not found
+          '500':
+            description: Error deleting user
   /movies:
     get:
       tags:
         - movie
       parameters:
-        - name: offset
+        - name: page
           in: query
           required: false
           schema:
@@ -204,6 +230,31 @@ paths:
         '500':
           description: Error retrieving movies
    
+  /movies/search:
+    get:
+      tags:
+        - movie
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "Harry Potter"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 0
+      summary: Retrieves a list of movies based on a search query
+      responses:
+        '200':
+          description: A list of movies
+        '404':
+          description: No movies found
+        '500':
+          description: Error retrieving movies
 
   /movies/reviews:
     get:
@@ -214,7 +265,7 @@ paths:
           in: query
           required: false
           schema:
-            type: string
+            type: integer
             example: 1
       summary: Retrieves a list of reviews for a specific movie
       responses:
@@ -224,6 +275,90 @@ paths:
           description: Movie not found
         '500':
           description: Error retrieving reviews 
+
+  /movies/reviews/unverified:
+    get:
+      tags:
+        - movie
+      security:
+        - bearerAuth: []
+      summary: Retrieves a list of unverified reviews (Need Admin Privileges)
+      parameters:
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: A list of unverified reviews
+        '404':
+          description: No unverified reviews found
+        '500':
+          description: Error retrieving unverified reviews  
+
+  /movies/reviews/verify:
+    post:
+      tags:
+        - movie
+      security:
+        - bearerAuth: []
+      summary: Verifies a review (Need Admin Privileges)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                movieId:
+                  type: integer
+              required:
+                - userId
+                - movieId
+      responses:
+        '200':
+          description: Review successfully verified
+        '400':
+          description: Missing required fields
+        '404':
+          description: Review not found
+        '500':
+          description: Error verifying review
+  /movies/reviews/delete:
+    post:
+      tags:
+        - movie
+      security:
+        - bearerAuth: []
+      summary: Deletes a review (If for a whole movie -> Need Admin Privileges)
+      description: If no UserId is provided, all reviews for the movie will be deleted (Need Admin Privileges)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                movieId:
+                  type: integer
+              required:
+                - movieId
+      responses:
+        '200':
+          description: Review successfully deleted
+        '400':
+          description: Missing required fields
+        '404':
+          description: Review not found
+        '500':
+          description: Error deleting review
+
   /movies/review:
     put:
       tags:
@@ -239,7 +374,7 @@ paths:
               type: object
               properties:
                 movieId:
-                  type: string
+                  type: integer
                 rating:
                   type: integer
                 review:
@@ -271,7 +406,7 @@ paths:
               type: object
               properties:
                 movieId:
-                  type: string
+                  type: integer
                 rating:
                   type: integer
                 review:
@@ -303,7 +438,7 @@ paths:
               type: object
               properties:
                 movieId:
-                  type: string
+                  type: integer
               required:
                 - movieId
       responses:

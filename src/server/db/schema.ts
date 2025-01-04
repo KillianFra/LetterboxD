@@ -46,6 +46,7 @@ export const reviews = pgTable('reviews', {
   userId: integer('user_id').references(() => users.id).notNull(),
   movieId: integer('movie_id').references(() => movies.id).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
+  verified: boolean('verified').default(false),
 }, (table) => ({
   pk: primaryKey({ columns: [table.userId, table.movieId] })
 }));

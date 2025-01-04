@@ -4,7 +4,6 @@ import * as friendService from "../services/friendService";
 const router = express.Router();
 
 router.get("/following", async (req: any, res: any) => {
-    console.log(req.user);
     const following = await friendService.getFollowing(req.user.id);
     res.status(200).json({ status: true, following });
 })
