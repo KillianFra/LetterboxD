@@ -5,6 +5,7 @@ import * as OpenApiValidator from 'express-openapi-validator';
 import movieRouter from './server/controllers/movieController';
 import userRouter from './server/controllers/userController';
 import friendRouter from './server/controllers/friendController';
+import listRouter from './server/controllers/listController';
 import { authMiddleware } from './server/middleware/authMiddleware';
 import cookieParser from 'cookie-parser';
 import errorMiddleware from './server/middleware/errorMiddleWare';
@@ -36,6 +37,7 @@ app.use(
 app.use('/u', userRouter)
 app.use('/movies', movieRouter)
 app.use('/friends', authMiddleware, friendRouter)
+app.use('/lists', listRouter)
 app.use('/', (req, res) => {
   res.redirect('/api-docs')
 })

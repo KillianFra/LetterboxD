@@ -1,19 +1,18 @@
-import { NextFunction } from "express";
+import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from "../services/userService";
-import { AuthenticatedRequest } from "../../../types/types";
+import { AuthenticatedRequest } from '../../../types/types';
 
-
-export function authMiddleware(req: any, res: any, next: NextFunction) {
+export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
     const token = req.headers.authorization;
     if (!token) {
-      return res.status(401).send('Unauthorized');
+        return next('No token provided');
     }
     try {
-      const jwtToken = token.replace('Bearer ', ''); 
-      const decoded = verifyToken(jwtToken);
-      (req as AuthenticatedRequest).user = decoded; // Attach decoded user info to the request object
-      next()
+        const jwtToken = token.replace('Bearer ', ''); 
+        const decoded = verifyToken(jwtToken);
+        (req as AuthenticatedRequest).user = decoded; // Attach decoded user info to the request object
+        next();
     } catch (err) {
-      next(err);
+        next('Invalid token');
     }
-  }
+}

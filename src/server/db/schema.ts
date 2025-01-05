@@ -90,4 +90,6 @@ export const movieListMovies = pgTable('movie_list_movies', {
   listId: integer('list_id').references(() => movieLists.id).notNull(),
   movieId: integer('movie_id').references(() => movies.id).notNull(),
   addedAt: timestamp('added_at').defaultNow(),
-});
+}, (table) => ({
+  pk: primaryKey({ columns: [table.listId, table.movieId] }),
+  }));

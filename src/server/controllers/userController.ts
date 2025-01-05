@@ -1,11 +1,12 @@
 import express, { NextFunction } from "express";
 import * as userService from "../services/userService";
+import * as listService from "../services/listService";
 import { db } from "../db";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import cookieParser from "cookie-parser";
 import { authMiddleware } from "../middleware/authMiddleware";
-import { AuthenticatedRequest } from "../../../types/movies";
+import { AuthenticatedRequest } from "../../../types/types";
 
 const router = express.Router();
 
@@ -99,6 +100,22 @@ router.get("/me", async (req: any, res: any) => {
     res.json({status: true, user: user[0]});
   } catch (error) {
     res.status(401).send({ status: false, message: error.message });
+  }
+});
+
+router.get("/:userId/lists", async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+    const userId = parseInt(req.params.userId);
+    
+    if (!userId) {
+      return res.status(400).json({ status: false, message: "User id is required" });
+    }
+
+    const lists = await listService.getListsFromUser(offset, userId);
+    res.status(200).json({ status: true, lists });
+  } catch (error) {
+    res.status(500).json({ status: false, message: "Internal server error" });
   }
 });
 
