@@ -22,7 +22,17 @@ router.get('/search', async (req: any, res: any) => {
     }
     const movies = await movieService.retrieveMoviesBySearch(query, page)
     return res.status(200).json({status: true, movies: movies})
-}) 
+})
+
+router.delete('/:movieId', authMiddleware, adminMiddleware, async (req: AuthenticatedRequest, res: any) => {
+    try {
+        const movieId = parseInt(req.params.movieId);
+        const response = await movieService.deleteMovie(movieId);
+        res.status(200).json({ status: true, response });
+    } catch (e) {
+        res.status(500).json({ status: false, message: 'Internal server error' });
+    }
+});
 
 router.get('/reviews', async (req, res) => {
     let movieId: number;

@@ -12,6 +12,17 @@ const insertMovie = async (movie: movie) => {
     });
 };
 
+export async function deleteMovie(movieId: number) {
+  const movieResponse = await db
+    .delete(movies)
+    .where(eq(movies.id, movieId))
+    .returning()
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return movieResponse;
+}
+
 export async function addReview(movieId: number, review: string, rating: number, user: userToken) {
   const reviewResponse = await db
     .insert(reviews)

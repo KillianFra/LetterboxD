@@ -282,7 +282,6 @@ paths:
           description: A list of movies
         '500':
           description: Error retrieving movies
-   
   /movies/search:
     get:
       tags:
@@ -520,6 +519,28 @@ paths:
           description: Movie not found
         '500':
           description: Error retrieving movie details
+    delete:
+      tags:
+        - movie
+      security:
+        - bearerAuth: []
+      summary: Deletes a movie (needs admin privileges)
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Movie successfully deleted
+        '400':
+          description: Missing required fields
+        '404':
+          description: Movie not found
+        '500':
+          description: Error deleting movie
 
   /friends/following:
     get:
