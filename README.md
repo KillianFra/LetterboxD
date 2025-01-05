@@ -2,6 +2,51 @@
 
 Welcome to the non-official Letterboxd API documentation. This API allows you to register, login, and interact with your friends and movies.
 
+## Usage
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- PostgreSQL
+
+### Setup
+
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/KillianFra/LetterboxD.git
+    cd LetterboxD
+    ```
+
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3. Create a `.env` file in the root directory and add the following environment variables:
+    ```env
+    // Link to your database (e.g. postgres://user:password@localhost:5432/dbname)
+    DATABASE_URL=your_database_url
+
+    // JWT secret key
+    JWT_SECRET=your_jwt_secret
+
+    // for development purposes (used to populate the database with movies)
+    TMDB_API_KEY=your_tmdb_api_key
+    ```
+
+4. Start the server:
+    ```bash
+    npm run dev
+    ```
+
+5. The API will be available at `http://localhost:3000/` by default.
+
+For more information, refer to the [API documentation] located at `http://localhost:3000/api-docs/`.
+
+### For database informations, run the following command:
+```bash
+npm run studio
+```
 ## Features
 
 ### User Management
@@ -81,52 +126,12 @@ Welcome to the non-official Letterboxd API documentation. This API allows you to
 
 ## Authentication
 
-This API uses JWT for authentication. To access protected endpoints, include the JWT token in the `Authorization` header as follows:
+This API uses JWT for authentication. To access protected endpoints, include the JWT token in the `Authorization` header as follows (this token is returned when you login):
 
 ```
 Authorization: Bearer <your-token>
 ```
 
-## Usage
-
-### Prerequisites
-
-- Node.js (v14 or higher)
-- PostgreSQL
-
-### Setup
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/KillianFra/LetterboxD.git
-    cd LetterboxD
-    ```
-
-2. Install dependencies:
-    ```bash
-    npm install
-    ```
-
-3. Create a `.env` file in the root directory and add the following environment variables:
-    ```env
-    // Link to your database (e.g. postgres://user:password@localhost:5432/dbname)
-    DATABASE_URL=your_database_url
-
-    // JWT secret key
-    JWT_SECRET=your_jwt_secret
-
-    // for development purposes (used to populate the database with movies)
-    TMDB_API_KEY=your_tmdb_api_key
-    ```
-
-4. Start the server:
-    ```bash
-    npm run dev
-    ```
-
-5. The API will be available at `http://localhost:3000/` by default.
-
-For more information, refer to the [API documentation] located at `http://localhost:3000/api-docs/`.
 
 ## License
 
