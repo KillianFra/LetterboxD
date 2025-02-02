@@ -3,7 +3,7 @@ import { users, reviews, friends } from "../db/schema";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { eq, or } from "drizzle-orm";
-import { user, userToken } from "../../../types/types";
+import { user, userToken } from "../types/types";
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 const SALT_ROUNDS = 10;

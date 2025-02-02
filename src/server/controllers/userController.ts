@@ -6,13 +6,13 @@ import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import cookieParser from "cookie-parser";
 import { authMiddleware } from "../middleware/authMiddleware";
-import { AuthenticatedRequest } from "../../../types/types";
+import { AuthenticatedRequest } from "../types/types";
 
 const router = express.Router();
 
 router.use(cookieParser());
 
-router.get("/", async (req: any, res: any) => {
+router.get("/", async (req: Request & {query: {offset: string}}, res: any) => {
   try {
     const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
     const users = await userService.getUsers(offset);
@@ -22,8 +22,8 @@ router.get("/", async (req: any, res: any) => {
   }
 });
 
-router.put("/", authMiddleware, async (req: AuthenticatedRequest, res: any) => {
-  if (!req.body.username || !req.body.password) {
+router.put("/", authMiddleware, async (req: AuthenticatedRequest & {body: {username: string, password: string}}, res: any) => {
+  if (!req.body?.username || !req.body.password) {
     return res.status(400).json({ status: false, message: "Username and password are required" });
   }
   try {
@@ -35,7 +35,7 @@ router.put("/", authMiddleware, async (req: AuthenticatedRequest, res: any) => {
   }
 });
 
-router.post("/register", async (req: any, res: any) => {
+router.post("/register", async (req: Request & {body: {username: string, password: string}}, res: any) => {
   const { username, password } = req.body;
   let newUser;
   if (!username || !password) {
@@ -53,7 +53,7 @@ router.post("/register", async (req: any, res: any) => {
 });
 
 // Login user and return JWT token as a cookie
-router.post("/login", async (req: any, res: any) => {
+router.post("/login", async (req: Request & {body: {username: string, password: string}}, res: any) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).send("Username and password are required");
@@ -99,11 +99,14 @@ router.get("/me", async (req: any, res: any) => {
 
     res.json({status: true, user: user[0]});
   } catch (error) {
-    res.status(401).send({ status: false, message: error.message });
+    res.status(401).send({ 
+      status: false, 
+      message: error instanceof Error ? error.message : 'Unknown error' 
+    });
   }
 });
 
-router.get("/:userId/lists", async (req: AuthenticatedRequest, res: any) => {
+router.get("/:userId/lists", async (req: AuthenticatedRequest & {params: {userId: string}, query: {offset: string}}, res: any) => {
   try {
     const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
     const userId = parseInt(req.params.userId);
@@ -119,7 +122,8 @@ router.get("/:userId/lists", async (req: AuthenticatedRequest, res: any) => {
   }
 });
 
-router.post("/delete", authMiddleware, async (req: AuthenticatedRequest, res: any, next: NextFunction) => {
+// @ts-ignore
+router.post("/delete", authMiddleware, async (req: AuthenticatedRequest & {body: {userId?: number}}, res: any, next: NextFunction) => {
   const userId = req.body.userId;
   if (userId === undefined || userId === null) {
     return res.status(400).json({ status: false, message: "User id is required" });
@@ -128,7 +132,7 @@ router.post("/delete", authMiddleware, async (req: AuthenticatedRequest, res: an
     return res.status(403).json({ status: false, message: "Unauthorized" });
   }
   try {
-    const deletedUser = await userService.deleteUser(userId ? userId : req.user.id);
+    const deletedUser = await userService.deleteUser(userId);
     if (!deletedUser) {
       return next(new Error("User not found"));
     }

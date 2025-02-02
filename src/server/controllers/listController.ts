@@ -9,7 +9,7 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import { authMiddleware } from "../middleware/authMiddleware";
-import { AuthenticatedRequest } from "../../../types/types";
+import { AuthenticatedRequest } from "../types/types";
 import * as listService from "../services/listService";
 
 const router = express.Router();
@@ -17,7 +17,7 @@ const router = express.Router();
 router.use(cookieParser());
 
 // create a list
-router.post("/", authMiddleware, async (req: AuthenticatedRequest, res: any) => {
+router.post("/", authMiddleware, async (req: AuthenticatedRequest & {body: {name: string}}, res: any) => {
     const { name } = req.body;
     try {
         const list = await listService.createList(name, req.user);
@@ -28,7 +28,7 @@ router.post("/", authMiddleware, async (req: AuthenticatedRequest, res: any) => 
 });
 
 // delete a list
-router.delete("/:listId", authMiddleware, async (req: AuthenticatedRequest, res: any) => {
+router.delete("/:listId", authMiddleware, async (req: AuthenticatedRequest & {params: {listId: string}}, res: any) => {
     try {
         const listId = parseInt(req.params.listId);
         await listService.deleteList(listId, req.user);
@@ -39,7 +39,7 @@ router.delete("/:listId", authMiddleware, async (req: AuthenticatedRequest, res:
 });
 
 // get all lists for a movie
-router.get('/movie/:movieId', async (req: AuthenticatedRequest, res: any) => {
+router.get('/movie/:movieId', async (req: AuthenticatedRequest & {params: {movieId: string}, query: {offset: string}}, res: any) => {
     try {
         const movieId = parseInt(req.params.movieId);
         const offset = parseInt(req.query.offset as string) || 0;
@@ -51,7 +51,7 @@ router.get('/movie/:movieId', async (req: AuthenticatedRequest, res: any) => {
 });
 
 // remove a movie from a list
-router.delete("/:listId/:movieId", authMiddleware, async (req: AuthenticatedRequest, res: any) => {
+router.delete("/:listId/:movieId", authMiddleware, async (req: AuthenticatedRequest & {params: {listId: string, movieId: string}}, res: any) => {
     try {
         const movieId = parseInt(req.params.movieId);
         const listId = parseInt(req.params.listId);
@@ -64,7 +64,7 @@ router.delete("/:listId/:movieId", authMiddleware, async (req: AuthenticatedRequ
 
 
 // add a movie to a list
-router.post('/:listId/:movieId', authMiddleware, async (req: AuthenticatedRequest, res: any) => {
+router.post('/:listId/:movieId', authMiddleware, async (req: AuthenticatedRequest & {params: {listId: string, movieId: string}}, res: any) => {
     try {
         const movieId = parseInt(req.params.movieId);
         const listId = parseInt(req.params.listId);
@@ -76,7 +76,7 @@ router.post('/:listId/:movieId', authMiddleware, async (req: AuthenticatedReques
 })
 
 // get the movies in a list
-router.get('/:listId', async (req: AuthenticatedRequest, res: any) => {
+router.get('/:listId', async (req: AuthenticatedRequest & {params: {listId: string}, query: {offset: string}}, res: any) => {
     try {
         const listId = parseInt(req.params.listId);
         const offset = parseInt(req.query.offset as string) || 0;

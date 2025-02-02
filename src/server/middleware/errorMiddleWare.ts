@@ -1,19 +1,10 @@
-import { Request, Response, NextFunction } from "express";
+import { ErrorRequestHandler } from "express";
 
-export function errorMiddleware(
-  err: any, 
-  req: Request,
-  res: Response,
-  _next: NextFunction
-) {
-  // Format error response
+const errorMiddleware: ErrorRequestHandler = (err, _req, res, next) => {
   const status = err.status || 500;
-  console.log(`Error: ${err.message}, Status: ${status}`);
   const message = err.message || "Something went wrong";
-  res.status(status).json({
-    status: false,
-    message
-  });
-}
+  res.status(status).json({ status: false, message });
+  next();
+};
 
 export default errorMiddleware;

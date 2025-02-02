@@ -1,6 +1,6 @@
+import { db } from "../db";
 import { movies, reviews, users } from "../db/schema";
-import { db } from "../db/index.ts";
-import { movie, movieIMDB, userToken } from "../../../types/types.ts";
+import { movie, movieIMDB, userToken } from "../types/types";
 import { and, eq, ilike } from "drizzle-orm";
 
 const insertMovie = async (movie: movie) => {
@@ -171,48 +171,52 @@ export async function retrieveMovieById(id: number) {
 
 //FOR DEVELOPMENT PURPOSES ONLY
 export async function populateMovies() {
+  const batchSize = 50; // Number of concurrent requests
   let movie_id = 2;
-  while (true) {
-    const response = await fetch(
-      `https://api.themoviedb.org/3/movie/${movie_id}?language=fr-FR`,
-      {
-        headers: {
-          Authorization: "Bearer " + process.env.TMDB_API_KEY,
-        },
-      }
-    );
+  const maxMovies = 500000; // Safety limit
+
+  while (movie_id < maxMovies) {
+    const promises = [];
     
-    if (response.status !== 200) {
-      movie_id++;
-      continue;
+    // Create a batch of promises
+    for (let i = 0; i < batchSize; i++) {
+      const currentId = movie_id++;
+      promises.push(
+        fetch(
+          `https://api.themoviedb.org/3/movie/${currentId}?language=fr-FR`,
+          {
+            headers: {
+              Authorization: "Bearer " + process.env.TMDB_API_KEY,
+            },
+          }
+        ).then(async (response) => {
+          if (response.status === 200) {
+            const movie = await response.json();
+            const insertedMovie: movieIMDB = {
+              id: movie.id,
+              imdbId: movie.imdb_id,
+              adult: movie.adult,
+              backdropPath: movie.backdrop_path,
+              originalTitle: movie.original_title,
+              overview: movie.overview,
+              popularity: movie.popularity,
+              posterPath: movie.poster_path,
+              releaseDate: movie.release_date ? new Date(movie.release_date) : null,
+              title: movie.title,
+              voteAverage: movie.vote_average,
+              voteCount: movie.vote_count,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              video: movie.video
+            };
+            return insertMovie(insertedMovie as unknown as movie).catch(console.error);
+          }
+        }).catch(console.error)
+      );
     }
-    const movies = (await response.json()) as movieIMDB;
 
-    const insertedMovie: movieIMDB = {
-      adult: movies.adult,
-      backdropPath: movies.backdrop_path,
-      originalTitle: movies.original_title,
-      overview: movies.overview,
-      popularity: movies.popularity,
-      posterPath: movies.poster_path,
-      releaseDate: movies.release_date ? new Date(movies.release_date) : null,
-      title: movies.title,
-      voteAverage: movies.vote_average,
-      voteCount: movies.vote_count,
-      imdbId: movies.imdb_id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      id: movies.id,
-      video: movies.video
-    };
-
-    try {
-      await insertMovie(insertedMovie);
-    } catch (e) {
-      console.error(e);
-    }
-
-    movie_id++;
+    // Wait for all requests in the batch to complete
+    await Promise.all(promises);
   }
 }
 

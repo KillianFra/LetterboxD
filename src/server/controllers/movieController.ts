@@ -1,30 +1,47 @@
-import express, { NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import * as movieService from '../services/movieService';
 import { authMiddleware } from '../middleware/authMiddleware';
-import { AuthenticatedRequest } from '../../../types/types';
+import { AuthenticatedRequest } from '../types/types';
 import { adminMiddleware } from '../middleware/adminMiddleware';
 
 const router = express.Router();
 
 //DEVELOPPMENT PURPOSES ONLY
-router.get('/populate', async (_ , res) => {
+router.get('/populate', async (_, res) => {
+    console.log(process.env.TMDB_API_KEY);
+    console.log('entering in the populateMovies function');
     await movieService.populateMovies()
     res.send('Populating movies')
 })
+
 //---------------------------
+router.get("/", async (req: Request & { query: { page: string } }, res: any) => {
+    const page = req.query.page ? parseInt(req.query.page) - 1 : 0;
+    console.log(`[MovieController] Retrieving movies page ${page + 1}`);
+
+    try {
+        const movies = await movieService.retrieveAllMovies(page);
+        console.log(`[MovieController] Successfully retrieved ${movies.length} movies`);
+        res.status(200).json({ status: true, movies });
+    } catch (error) {
+        console.error(`[MovieController] Error retrieving movies:`, error);
+        res.status(500).json({ status: false, message: "Error retrieving movies" });
+    }
+});
 
 // search for movies
 router.get('/search', async (req: any, res: any) => {
     const query = req.query.q ? req.query.q : null
     const page = req.query.page ? req.query.page : 0
     if (!query) {
-        return res.status(400).json({status: false, message: 'Invalid search query'})
+        return res.status(400).json({ status: false, message: 'Invalid search query' })
     }
     const movies = await movieService.retrieveMoviesBySearch(query, page)
-    return res.status(200).json({status: true, movies: movies})
+    return res.status(200).json({ status: true, movies: movies })
 })
 
-router.delete('/:movieId', authMiddleware, adminMiddleware, async (req: AuthenticatedRequest, res: any) => {
+// @ts-ignore
+router.delete('/:movieId', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
     try {
         const movieId = parseInt(req.params.movieId);
         const response = await movieService.deleteMovie(movieId);
@@ -38,18 +55,18 @@ router.get('/reviews', async (req, res) => {
     let movieId: number;
     let offset: number;
     try {
-        movieId  = parseInt(req.query.movieId as string);
+        movieId = parseInt(req.query.movieId as string);
         offset = req.query.page ? parseInt(req.query.page as string) : 0;
         const reviews = await movieService.retrieveVerifiedReviews(movieId, offset)
-        res.status(200).json({status: true, reviews: reviews})
+        res.status(200).json({ status: true, reviews: reviews })
     }
     catch (e) {
-        res.status(400).json({status: false, message: 'Invalid movie id'})
+        res.status(400).json({ status: false, message: 'Invalid movie id' })
     }
 
 })
 
-router.post('/review', authMiddleware, async (req: AuthenticatedRequest, res: any) => {
+router.post('/review', authMiddleware, async (req: AuthenticatedRequest & { body: { movieId: string, rating: string, review: string } }, res: any) => {
     try {
         const { movieId, rating, review } = req.body;
         if (!movieId || !rating || !review) {
@@ -65,8 +82,8 @@ router.post('/review', authMiddleware, async (req: AuthenticatedRequest, res: an
     }
 });
 
-// get unverified reviews
-router.get('/reviews/unverified', authMiddleware, adminMiddleware, async (req: AuthenticatedRequest, res: any) => {
+// @ts-ignore
+router.get('/reviews/unverified', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
     try {
         let offset: number;
         offset = req.query.page ? parseInt(req.query.page as string) : 0;
@@ -77,7 +94,8 @@ router.get('/reviews/unverified', authMiddleware, adminMiddleware, async (req: A
     }
 });
 
-router.post('/reviews/verify', authMiddleware, adminMiddleware, async (req: AuthenticatedRequest, res: any, next: NextFunction) => {
+// @ts-ignore
+router.post('/reviews/verify', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
     let userId: number;
     let movieId: number;
     try {
@@ -85,7 +103,7 @@ router.post('/reviews/verify', authMiddleware, adminMiddleware, async (req: Auth
         movieId = parseInt(req.body.movieId as string);
         const response = await movieService.verifyReview(movieId, userId);
         if (response.length === 0) {
-            return next({ status: 404, message: 'Review not found' });
+            return res.status(404).json({ status: false, message: 'Review not found' });
         }
         res.status(200).json({ status: true, response: response });
     } catch (e) {
@@ -93,7 +111,7 @@ router.post('/reviews/verify', authMiddleware, adminMiddleware, async (req: Auth
     }
 })
 
-router.post('/reviews/delete', authMiddleware, async (req: AuthenticatedRequest, res: any) => {
+router.post('/reviews/delete', authMiddleware, async (req: AuthenticatedRequest & { body: { userId: string, movieId: string } }, res: any) => {
     const { userId, movieId } = req.body;
     if (!movieId) {
         return res.status(400).json({ status: false, message: 'Invalid request' });

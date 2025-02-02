@@ -1,18 +1,19 @@
-import { Request } from "express";
-import {
-  movies,
-  movieGenres,
-  genres,
-  users,
-} from "../src/server/db/schema.ts";
+import { genres, movieGenres, movies, users } from "../db/schema";
+
+interface AuthenticatedRequest extends Request {
+  user: userToken;
+}
+
+type userToken = Omit<typeof users.$inferInsert, "password">;
 
 type user = typeof users.$inferInsert;
-type userToken = Omit<user, "password">;
 type roles = typeof users.$inferInsert.role;
 type movie = typeof movies.$inferInsert;
 type movieGenre = typeof movieGenres.$inferInsert;
 type genre = typeof genres.$inferInsert;
 type movieIMDB = {
+    id: number;
+    imdbId: string;
     adult: boolean;
     backdropPath: string;
     originalTitle: string;
@@ -23,16 +24,10 @@ type movieIMDB = {
     title: string;
     voteAverage: number;
     voteCount: number;
-    imdbId: string;
     createdAt: Date;
     updatedAt: Date;
-    id: number;
     video: boolean;
 
 }
 
-type AuthenticatedRequest = Request & {
-  user: userToken;
-};
-
-export type {AuthenticatedRequest, user, userToken, roles, movie, movieGenre, genre, movieIMDB };
+export type { user, roles, movie, movieGenre, genre, movieIMDB, userToken, AuthenticatedRequest };

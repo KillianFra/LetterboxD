@@ -2,13 +2,15 @@
   "name": "letterboxd",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "nodemon ./src/server.ts",
-    "build": "tsc && vite build",
+    "build": "tsc && copy src\\openapi.yaml dist\\",
+    "start": "tsc && node ./dist/server",
     "preview": "vite preview",
     "studio": "drizzle-kit studio",
-    "pull": "npx drizzle-kit pull"
+    "pull": "npx drizzle-kit pull",
+    "push": "npx drizzle-kit"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

@@ -7,7 +7,7 @@
 //get all lists for a movie, params: offset (should cap at 50) (function)
 
 import { and, eq } from "drizzle-orm";
-import { userToken } from "../../../types/types";
+import { userToken } from "../types/types";
 import { db } from "../db";
 import { movieListMovies, movieLists, movies } from "../db/schema";
 

@@ -12,12 +12,8 @@ import errorMiddleware from './server/middleware/errorMiddleWare';
 import * as swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const filename = fileURLToPath(import.meta.url);
-const dirname = path.dirname(filename);
-
-const swaggerDocument = YAML.load(path.join(dirname, 'openapi.yaml'));
+const swaggerDocument = YAML.load(('./documentation/openapi.yaml'));
 
 const app = express();
 app.use(express.json());
@@ -28,7 +24,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // OpenAPI validator
 app.use(
   OpenApiValidator.middleware({
-    apiSpec: path.join(dirname, 'openapi.yaml'),
+    apiSpec: path.join('./documentation/openapi.yaml'),
   }),
 );
 
@@ -38,17 +34,18 @@ app.use('/u', userRouter)
 app.use('/movies', movieRouter)
 app.use('/friends', authMiddleware, friendRouter)
 app.use('/lists', listRouter)
-app.use('/', (req, res) => {
-  res.redirect('/api-docs')
-})
 
 // Protected routes
 
 // Error middleware
 app.use(errorMiddleware)
 
+// Catch-all route for API docs
+app.use('/', (_ , res) => {
+  res.redirect('/api-docs')
+})
 
-
-app.listen(3000, () => {
+app.listen(3000, '0.0.0.0', () => {
   console.log(`Server running at http://localhost:3000`);
+  console.log(process.env.DATABASE_URL);
 });

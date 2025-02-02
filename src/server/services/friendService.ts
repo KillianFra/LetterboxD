@@ -54,7 +54,7 @@ export async function unfollow(userId: number, friendId: number) {
         .catch((error) => {
             throw new Error("Error unfollowing user: " + error.message);
         });
-    if (unfollow.rowCount === 0) {
+    if (unfollow.length === 0) {
         throw new Error("User not found");
     }
     return unfollow;

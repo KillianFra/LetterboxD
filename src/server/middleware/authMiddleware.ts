@@ -1,18 +1,14 @@
-import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from "../services/userService";
-import { AuthenticatedRequest } from '../../../types/types';
 
-export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
-    const token = req.headers.authorization;
-    if (!token) {
-        return next('No token provided');
-    }
+// @ts-ignore
+export const authMiddleware: RequestHandler = (req, _res, next) => {
     try {
-        const jwtToken = token.replace('Bearer ', ''); 
-        const decoded = verifyToken(jwtToken);
-        (req as AuthenticatedRequest).user = decoded; // Attach decoded user info to the request object
+        const token = req.headers.authorization;
+        if (!token) return next('No token provided');
+        const jwtToken = token.replace('Bearer ', '');
+        req.user = verifyToken(jwtToken);
         next();
     } catch (err) {
-        next('Invalid token');
+        return next('Invalid token');
     }
-}
+};
