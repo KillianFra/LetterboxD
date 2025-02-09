@@ -12,7 +12,6 @@ import errorMiddleware from './server/middleware/errorMiddleWare';
 import * as swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import path from 'path';
-
 const swaggerDocument = YAML.load(('./documentation/openapi.yaml'));
 
 const app = express();

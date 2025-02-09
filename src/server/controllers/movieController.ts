@@ -29,6 +29,29 @@ router.get("/", async (req: Request & { query: { page: string } }, res: any) => 
     }
 });
 
+router.get('/popular', async (req: Request, res: Response) => {
+    console.log(req.query);
+    try {
+        const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+        const movies = await movieService.retrievePopularMovies(offset, limit);
+        res.status(200).json({ status: true, movies });
+    } catch (e) {
+        console.error(`[MovieController] Error retrieving popular movies:`, e);
+        res.status(500).json({ status: false, message: 'Internal server error' });
+    }
+});
+
+router.get('/latest', async (req: Request, res: Response) => {
+    try {
+        const movies = await movieService.retrieveLatestMovies();
+        res.status(200).json({ status: true, movies });
+    } catch (e) {
+        res.status(500).json({ status: false, message: 'Internal server error' });
+    }
+});
+
+
 // search for movies
 router.get('/search', async (req: any, res: any) => {
     const query = req.query.q ? req.query.q : null
@@ -50,6 +73,21 @@ router.delete('/:movieId', authMiddleware, adminMiddleware, async (req: Request,
         res.status(500).json({ status: false, message: 'Internal server error' });
     }
 });
+
+router.get('/reviews/latest', async (req, res) => {
+    try {
+        const offset = req.query.offset ? parseInt(req.query.page as string) : 0;
+        let limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+        if (limit > 50) {
+            limit = 50;
+        }
+        const reviews = await movieService.retrieveLatestReviews(offset, limit);
+        res.status(200).json({ status: true, reviews: reviews });
+    }
+    catch (e) {
+        res.status(500).json({ status: false, message: 'Internal server error' });
+    }
+})
 
 router.get('/reviews', async (req, res) => {
     let movieId: number;

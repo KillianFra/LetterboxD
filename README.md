@@ -6,8 +6,8 @@ Welcome to the non-official Letterboxd API documentation. This API allows you to
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- PostgreSQL
+- Docker and Docker Compose
+- Node.js (v14 or higher) - for local development only
 
 ### Setup
 
@@ -17,36 +17,51 @@ Welcome to the non-official Letterboxd API documentation. This API allows you to
     cd LetterboxD
     ```
 
-2. Install dependencies:
-    ```bash
-    npm install
-    ```
-
-3. Create a `.env` file in the root directory and add the following environment variables:
+2. Create a `.env` file in the root directory and add the following environment variables:
     ```env
-    // Link to your database (e.g. postgres://user:password@localhost:5432/dbname)
-    DATABASE_URL=your_database_url
+    # Database configuration
+    POSTGRES_USER=your_postgres_user
+    POSTGRES_PASSWORD=your_postgres_password
+    POSTGRES_DB=your_database_name
+    DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
 
-    // JWT secret key
+    # JWT configuration
     JWT_SECRET=your_jwt_secret
 
-    // for development purposes (used to populate the database with movies)
+    # TMDB configuration (for development purposes - used to populate the database with movies)
     TMDB_API_KEY=your_tmdb_api_key
     ```
 
-4. Start the server:
+3. Start the application using Docker Compose:
     ```bash
-    npm run dev
+    docker compose up -d
     ```
+    This will:
+    - Start the PostgreSQL database
+    - Start the Node.js application
+    - Set up all necessary networking between containers
 
-5. The API will be available at `http://localhost:3000/` by default.
+4. The API will be available at `http://localhost:3000/` by default.
 
 For more information, refer to the [API documentation] located at `http://localhost:3000/api-docs/`.
 
-### For database informations, run the following command:
+### Development
+
+For database management during development, you can use Prisma Studio:
 ```bash
 npm run studio
 ```
+
+To stop the application:
+```bash
+docker compose down
+```
+
+To view logs:
+```bash
+docker compose logs -f
+```
+
 ## Features
 
 ### User Management

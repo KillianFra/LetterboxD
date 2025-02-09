@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "commonjs",
+  "proxy": "http://localhost:3001",
   "scripts": {
     "dev": "nodemon ./src/server.ts",
     "build": "tsc && copy src\\openapi.yaml dist\\",

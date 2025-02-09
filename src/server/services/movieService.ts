@@ -1,7 +1,7 @@
 import { db } from "../db";
 import { movies, reviews, users } from "../db/schema";
 import { movie, movieIMDB, userToken } from "../types/types";
-import { and, eq, ilike } from "drizzle-orm";
+import { and, desc, eq, ilike } from "drizzle-orm";
 
 const insertMovie = async (movie: movie) => {
   await db
@@ -11,6 +11,33 @@ const insertMovie = async (movie: movie) => {
       throw new Error(e);
     });
 };
+
+export async function retrieveLatestMovies() {
+  const moviesList = await db
+    .select()
+    .from(movies)
+    .orderBy(desc(movies.releaseDate))
+    .limit(5)
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return moviesList;
+}
+
+export async function retrievePopularMovies(offset: number, limit: number) {
+  const moviesList = await db
+    .select()
+    .from(movies)
+    .orderBy(desc(movies.popularity))
+    .limit(limit ? limit : 5)
+    .offset(offset ? offset * 50: 0)
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return moviesList;
+}
+
+
 
 export async function deleteMovie(movieId: number) {
   const movieResponse = await db
@@ -53,6 +80,20 @@ export async function updateReview(movieId: number, review: string, rating: numb
       throw new Error(e);
     });
   return reviewResponse;
+}
+
+export async function retrieveLatestReviews(offset: number, limit: number) {
+  const reviewsList = await db
+    .select()
+    .from(reviews)
+    .orderBy(desc(reviews.createdAt))
+    .where(eq(reviews.verified, true))
+    .limit(limit ? limit : 5)
+    .offset(offset ? offset * 50 : 0)
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return reviewsList;
 }
 
 
