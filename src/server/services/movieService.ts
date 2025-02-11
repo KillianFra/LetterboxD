@@ -88,6 +88,7 @@ export async function retrieveLatestReviews(offset: number, limit: number) {
     .from(reviews)
     .orderBy(desc(reviews.createdAt))
     .where(eq(reviews.verified, true))
+    .leftJoin(movies, eq(reviews.movieId, movies.id))
     .limit(limit ? limit : 5)
     .offset(offset ? offset * 50 : 0)
     .catch((e) => {
