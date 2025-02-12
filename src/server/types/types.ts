@@ -13,7 +13,6 @@ type movieGenre = typeof movieGenres.$inferInsert;
 type genre = typeof genres.$inferInsert;
 type movieIMDB = {
     id: number;
-    imdbId: string;
     adult: boolean;
     backdropPath: string;
     originalTitle: string;

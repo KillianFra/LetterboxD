@@ -215,7 +215,7 @@ export async function retrieveMovieById(id: number) {
 export async function populateMovies() {
   const batchSize = 50; // Number of concurrent requests
   let movie_id = 2;
-  const maxMovies = 500000; // Safety limit
+  const maxMovies = 1000000; // Safety limit
 
   while (movie_id < maxMovies) {
     const promises = [];
@@ -234,9 +234,9 @@ export async function populateMovies() {
         ).then(async (response) => {
           if (response.status === 200) {
             const movie = await response.json();
+            movie.imdb_id = parseInt(movie.imdb_id.replace("tt", ""))
             const insertedMovie: movieIMDB = {
-              id: movie.id,
-              imdbId: movie.imdb_id,
+              id: movie.imdb_id,
               adult: movie.adult,
               backdropPath: movie.backdrop_path,
               originalTitle: movie.original_title,

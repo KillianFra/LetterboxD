@@ -24,8 +24,7 @@ export const users = pgTable('users', {
 });
 
 export const movies = pgTable('movies', {
-  id: serial('id').primaryKey(),
-  imdbId: text('imdb_id'),
+  id: integer('imdb_id').primaryKey(),
   adult: boolean('adult'),
   backdropPath: text('backdrop_path'),
   originalTitle: text('original_title'),
@@ -49,6 +48,7 @@ export const reviews = pgTable('reviews', {
   movieId: integer('movie_id').references(() => movies.id).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
   verified: boolean('verified').default(false),
+  likes: integer('likes').default(0),
 });
 
 export const genres = pgTable('genres', {
