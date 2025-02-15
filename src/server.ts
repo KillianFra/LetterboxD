@@ -13,7 +13,6 @@ import * as swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import path from 'path';
 const swaggerDocument = YAML.load(('./documentation/openapi.yaml'));
-
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -46,5 +45,4 @@ app.use('/', (_ , res) => {
 
 app.listen(3000, '0.0.0.0', () => {
   console.log(`Server running at http://localhost:3000`);
-  console.log(process.env.DATABASE_URL);
 });
