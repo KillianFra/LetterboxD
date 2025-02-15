@@ -8,8 +8,6 @@ const router = express.Router();
 
 //DEVELOPPMENT PURPOSES ONLY
 router.get('/populate', async (_, res) => {
-    console.log(process.env.TMDB_API_KEY)
-    console.log('entering in the populateMovies function')
     await movieService.populateMovies()
     res.send('Populating movies')
 })

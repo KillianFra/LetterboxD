@@ -25,10 +25,10 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://postgres:superstrongpassword!@db:5432/postgres
+      - DATABASE_URL= ${DATABASE_URL}
       - NODE_ENV=production
-      - TMDB_API_KEY=eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzNDU4NTBjM2VjMDNjYjAwZmRiOTQxZTZlMWIyMzkxNSIsIm5iZiI6MTY4NjU4MDU4OS43MDU5OTk5LCJzdWIiOiI2NDg3MmQ2ZGUzNzVjMDAxMzljMTRjZTIiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.KQdM0sWLAWjqXf8hAIcGfy2Jy0BM14eFXmfwc3fZK9E
-      - JWT_SECRET_KEY=superstrongpassword!
+      - TMDB_API_KEY=${TMDB_API_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     volumes:
       - .:/app
       - /app/node_modules
