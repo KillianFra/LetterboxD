@@ -44,6 +44,8 @@ jobs:
           done
 
       - name: Run migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx drizzle-kit generate && npx drizzle-kit push --force
 
       - name: Build project
@@ -51,10 +53,10 @@ jobs:
 
   deploy:
     needs: build
+    environment: production
     runs-on: ubuntu-latest
     container: ghcr.io/railwayapp/cli:latest
     env:
-      SVC_ID: ${{ secrets.SVC_ID }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
     steps:
@@ -62,4 +64,4 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Deploy to Railway
-        run: railway up --service=${{ secrets.SVC_ID }}
+        run: railway up --service LetterboxDB

@@ -6,8 +6,8 @@
   "proxy": "http://localhost:3001",
   "scripts": {
     "dev": "nodemon ./src/server.ts",
-    "build": "tsc && copy src\\openapi.yaml dist\\",
-    "ubuntu-build": "tsc && cp src/openapi.yaml dist/",
+    "build": "tsc && copy documentation\\openapi.yaml dist\\",
+    "ubuntu-build": "tsc && cp ./documentation/openapi.yaml dist/",
     "start": "tsc && node ./dist/server",
     "preview": "vite preview",
     "studio": "drizzle-kit studio",
