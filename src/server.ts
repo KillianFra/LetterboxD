@@ -11,14 +11,21 @@ import cookieParser from 'cookie-parser';
 import errorMiddleware from './server/middleware/errorMiddleWare';
 import * as swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
+import cors from 'cors';
 import path from 'path';
 const swaggerDocument = YAML.load(('./documentation/openapi.yaml'));
 const app = express();
+
+app.use(cors({
+  origin: process.env.NEXT_PUBLIC_URL,
+  methods: "GET,POST,PUT,DELETE,OPTIONS",
+  allowedHeaders: "Content-Type,Authorization",
+}));
+
 app.use(express.json());
 app.use(cookieParser());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 // OpenAPI validator
 app.use(
   OpenApiValidator.middleware({
@@ -43,6 +50,4 @@ app.use('/', (_ , res) => {
   res.redirect('/api-docs')
 })
 
-app.listen(3000, () => {
-  console.log(`Server running at http://localhost:3000`);
-});
+app.listen(3000, "0.0.0.0");
