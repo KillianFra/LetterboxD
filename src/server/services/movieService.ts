@@ -207,8 +207,14 @@ export async function retrieveMoviesBySearch(query: string, page: number) {
 }
 
 export async function retrieveMovieById(id: number) {
-  const movie = await db.select().from(movies).where(eq(movies.id, id)).limit(1);
-  return movie[0];
+  const movie = await db
+    .select()
+    .from(movies)
+    .where(eq(movies.id, id))
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return movie;
 }
 
 //FOR DEVELOPMENT PURPOSES ONLY

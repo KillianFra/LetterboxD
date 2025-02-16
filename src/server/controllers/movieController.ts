@@ -102,6 +102,20 @@ router.get('/reviews', async (req, res) => {
 
 })
 
+router.get('/:movieId', async (req: Request, res: Response) => {
+    try {
+        const movieId = parseInt(req.params.movieId);
+        const movie = await movieService.retrieveMovieById(movieId);
+        if (movie.length === 0) {
+            res.status(404).json({ status: false, message: 'Movie not found' });
+        } else {
+            res.status(200).json({ status: true, movie });
+        }
+    } catch (e) {
+        res.status(500).json({ status: false, message: 'Internal server error' });
+    }
+});
+
 router.post('/review', authMiddleware, async (req: AuthenticatedRequest & { body: { movieId: string, rating: string, review: string } }, res: any) => {
     try {
         const { movieId, rating, review } = req.body;
